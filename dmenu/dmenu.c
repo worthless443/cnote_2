@@ -564,19 +564,26 @@ paste(void)
 }
 
 int __getline(char **ptr, int *size, FILE *f) {
-	int nl = 0, i = 1;
-	char *tmp = malloc(sizeof(char) * 4095), *t = tmp;
+	int nl = 0, idx = 1;
+	int test_idx = 0;
+	char *tmp = malloc(sizeof(char) * 4096), *t = tmp;
 	while(fread(t,1,1,f)) {
+		//printf("%d\n", idx);
 		if(*t == '\n') break;
-		tmp = realloc(tmp,i);
-		t = tmp + i;
-		++i;
+		if((tmp = realloc(tmp,idx * (sizeof(char) * 2))) == NULL)
+			die("realloc failed %u\n bytes", idx * sizeof(char));
+		t = tmp + idx;
+		++idx;
+		//die("fuck");
 	}
+	//printf("end of func\n");
 	tmp[strlen(tmp) - 1] = '\0';
 	*ptr = tmp;
-	*size = i;
+	*size = idx;
+	//printf("%s\n",tmp); // debugging 
+	//printf("\n\n");
 	if(0 == strcmp(tmp,"end")) return -1;
-	return i - 1;
+	return idx;
 }
 
 void
@@ -586,7 +593,7 @@ readinput_fd(FILE *f)
 	size_t i, itemsiz = 0, linesiz = 0;
 	ssize_t len;
 	/* read each line from stdin and add it to the item list */
-	for (i = 0; (len = __getline(&line, &linesiz, f)) >= 0; i++) {
+	for (i = 0; (len = __getline(&line, (int*)&linesiz, f)) >= 0; i++) {
 		if (i + 1 >= itemsiz) {
 			itemsiz += 256;
 			if (!(items = realloc(items, itemsiz * sizeof(*items))))

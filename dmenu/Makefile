@@ -3,10 +3,11 @@
 
 include config.mk
 
+dlib=libdmenu.a
 SRC = drw.c dmenu.c stest.c util.c
 OBJ = $(SRC:.c=.o)
 
-all: options dmenu stest
+all: options $(dlib)
 
 options:
 	@echo dmenu build options:
@@ -24,6 +25,8 @@ $(OBJ): arg.h config.h config.mk drw.h
 
 dmenu: dmenu.o drw.o util.o
 	$(CC) -o $@ dmenu.o drw.o util.o $(LDFLAGS)
+$(dlib): $(OBJ)
+	ar rcs $@ $^
 
 test: test.c
 	gcc $^ -o $@ ${LIBS} libdmenu.a
@@ -31,7 +34,7 @@ stest: stest.o
 	$(CC) -o $@ stest.o $(LDFLAGS)
 
 clean:
-	rm -f dmenu stest $(OBJ) dmenu-$(VERSION).tar.gz
+	rm -f dmenu stest $(OBJ) *.o dmenu-$(VERSION).tar.gz $(dlib)
 
 dist: clean
 	mkdir -p dmenu-$(VERSION)
