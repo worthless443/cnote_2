@@ -14,17 +14,40 @@ int idx = 0;
 int ops[15] = {0};
 int og[20] = {3};
 int gidx = 0;
+int opt_invalid;
+int arg_opt_invalid;
+char *opt_invalid_opt = NULL;
 
+int not_in_opt(char arg, char *string) {
+ 	for(int i=0;i<strlen(string);++i)	
+		if(arg == string[i]) 
+			return 0;
+	return 1;
+}
 
 int global_i;
 int eval_arguments(char *raw_arg, int *output) {
-	int is_whole;
+
+	arg_opt_invalid = 0;
+	opt_invalid = 0;
+	int is_whole, invalid_one;
 	char *arg = raw_arg  + 1;
+
+	char catopt[strlen(_SUP_STRING) + strlen(_SUP_STRING_BODY) + 1];
+	memset(catopt, '\0', strlen(_SUP_STRING) + strlen(_SUP_STRING_BODY) + 1);
+  	strcat(catopt, _SUP_STRING);
+	strcat(catopt, _SUP_STRING_BODY + 1); 
+
 	if(*raw_arg != '-') return 2;
 	global_i = 1;
 	if((is_whole = strlen(raw_arg + 1) > 1)) {
 		for(int i=0;i<strlen(arg);++i) {
 			++global_i;
+			if( not_in_opt(arg[i], catopt)) {
+				opt_invalid = 1;
+				*opt_invalid_opt = arg[i];
+			}
+			
 			for(int j=0;j<strlen(_SUP_STRING);++j) {
 				if(arg[i] == _SUP_STRING[j]) {
 					output[j] = 1;
@@ -40,11 +63,18 @@ int eval_arguments(char *raw_arg, int *output) {
 	}
 
 	else {
-		for(int j=0;j<strlen(_SUP_STRING);++j) {
-			if(*arg == _SUP_STRING[j]) {
-				output[j] = 1;
-			}
+		if(not_in_opt(*arg, catopt)) {
+			opt_invalid = 1;	
+			opt_invalid_opt = malloc(sizeof(char));
+			char *tmp = opt_invalid_opt;
+			opt_invalid_opt = (char*)(((long int)opt_invalid_opt + 3) & -4);
+			*opt_invalid_opt = *arg;
 		}
+		for(int j=0;j<strlen(_SUP_STRING);++j) {
+			if(*arg == _SUP_STRING[j]) 
+				output[j] = 1;
+		}
+
 		for(int j=1;j<strlen(_SUP_STRING_BODY);++j) {
 			if(*arg == _SUP_STRING_BODY[j]) {
 				output[OP_BAR + j] = 1;
@@ -57,11 +87,14 @@ int eval_arguments(char *raw_arg, int *output) {
 
 int ii = 0;
 
-void eval_arg_body_2(int *options,char **output, char **arg, int *i) {
+int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	int j = -1;
 	char *_arg = arg[*i] + global_i;
+	// NOT NULL terminated arg array
 	int op_opt;
-	if(strlen(_arg) <= 0) _arg = arg[++*i];
+	if(strlen(_arg) == 0) 
+		if(!(_arg = arg[++*i]))
+			return 0;
 
 	int _options[10] = {0};
 #ifndef MAX_ARGN 
@@ -95,9 +128,25 @@ void eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 			arr[op_opt]+=1;
 		 }
 	}	
+	return 1;
 }
 
 
+
+char **get_op_strings(int size) {
+	char **op_strings = malloc(sizeof(char*) * size);
+	for(int i=0;i<20;++i)
+		op_strings[i] = malloc(sizeof(char) * size);
+	return op_strings;
+}
+
+
+void setup(int *ops, char **op_strings, int argc,char **argv) {
+	for(int i=1,j = OP_BAR + 1;i<argc;++i,++j)  
+		if(eval_arguments(argv[i], ops)) 
+			if(!eval_arg_body_2(ops,op_strings,argv,&i))
+				die("expecting argument to %s", argv[i - 1]);
+}
 
 void eval_arg_body(int *options,char **output, char **arg, int *i) {
 	char *_arg = arg[*i] + global_i;
@@ -123,20 +172,6 @@ void eval_arg_body(int *options,char **output, char **arg, int *i) {
 		++PR_ADD;
 	}
 	
-}
-
-char **get_op_strings(int size) {
-	char **op_strings = malloc(sizeof(char*) * size);
-	for(int i=0;i<20;++i)
-		op_strings[i] = malloc(sizeof(char) * size);
-	return op_strings;
-}
-
-
-void setup(int *ops, char **op_strings, int argc,char **argv) {
-	for(int i=1,j = OP_BAR + 1;i<argc;++i,++j)  
-		if(eval_arguments(argv[i], ops)) 
-			eval_arg_body_2(ops,op_strings,argv,&i);
 }
 
 

@@ -3,11 +3,13 @@ CC=gcc
 OBJ=vargs.o sort.o
 LIB=libvargs.a
 MAIN=note
-FLAGS=-I./ -O3  -ggdb -Wall 
+FLAGS=-I./ -O3  -ggdb -Wall  -Wno-unused-variable
 PREFIX=/usr/bin
 #SRC_DIR=examples
 
-all: $(OBJ) $(LIB) $(MAIN)
+all: deps $(OBJ) $(LIB) $(MAIN) 
+deps: dmenu
+	make -C $^
 $(OBJ): %.o : %.c
 	$(CC) -c ${FLAGS} $^ -o $@
 $(LIB): $(OBJ)
@@ -19,3 +21,4 @@ install:
 	
 clean:
 	rm -rf ${OBJ} ${LIB} ${MAIN}
+	make -C dmenu clean

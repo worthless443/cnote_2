@@ -21,7 +21,7 @@ struct MetaFile {
 	char *name, *title;
 };
 
-int format_file(const char *str, char *buffer) {
+void format_file(const char *str, char *buffer) {
 	 sprintf(buffer,"## %s\n<text_begin>", str);
 }
 int write_file(const char *fn, char *content) {
@@ -37,6 +37,7 @@ int write_file(const char *fn, char *content) {
 	if(*(format + 3) >= 0x61) *(format + 3) -= 32;
 	fprintf(f,format);
 	fclose(f);
+	return 1;
 }
 
 int format_filename(const char *str, char *buffer) {
@@ -64,12 +65,15 @@ struct MetaFile *load_files(const char *dirname) {
 	int i = 1;
 	DIR *d = opendir(dirname);
 	struct dirent *dir;
-	struct MetaFile *files  = malloc(sizeof(struct MetaFile) * 4095);
+	struct MetaFile *files  = malloc(sizeof(struct MetaFile) * 4096);
+	// TODO take a look at why corruption realloc
 	while((dir = readdir(d)) != NULL) {
 		if(*dir->d_name != '.') {
-			files = realloc(files,i*sizeof(struct MetaFile));
-			files[i].idx = i;
-			files[i].name = dir->d_name;
+			//printf("%d\n", i);
+			if(!(files = realloc(files, i * 4096)))//sizeof(struct MetaFile))))
+				printf("warn: realloc() failed\n"); // I don't understand it
+			files[i - 1].idx = i;
+			files[i - 1].name = dir->d_name;
 			i++;
 		}
 	}
@@ -79,9 +83,10 @@ struct MetaFile *load_files(const char *dirname) {
 int open_files_dmenu(int flag) {
 	int i;
 	struct MetaFile *mf = load_files(__DIR);
+	//return 1;
 	char *format = malloc(sizeof(char)*4095);
 	memset(format,'\0',4095);
-	for(i=1;mf[i].idx;++i) {
+	for(i=0;mf[i].idx;++i) {
 		strcat(format,mf[i].name);
 		strcat(format,"\n");
 	}
@@ -89,15 +94,22 @@ int open_files_dmenu(int flag) {
 	bring_menu_string(format, _NORM_MASK & flag);
 	return 1;
 }
-
+extern int opt_invalid;
+extern char *opt_invalid_opt;
 int main(int argc, char **argv) {
-	
-	memset(arr,'\0',10);
+	memset(arr,'\0',10 * sizeof(int));
 	int op = 0;
 	char **op_strings =  get_op_strings(100);
 	setup(ops,op_strings, argc,argv);
 	char *title = NULL;
 	int ret;
+	if(opt_invalid) {
+		fprintf(stderr, "invalid arg %s\n", opt_invalid_opt) ;
+		free(opt_invalid_opt);
+		return 1;
+	}
+	if(ops[OP_COMMAND])
+		printf("c = %s\n", op_strings[OP_COMMAND]);
 	if(ops[OP_CL]) {
 		system("rm -rf /home/aissy/tmp/cache/*");
 	}
