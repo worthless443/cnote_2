@@ -11,6 +11,7 @@ X11LIB = /usr/X11R6/lib
 # Xinerama, comment if you don't want it
 XINERAMALIBS  = -lXinerama
 XINERAMAFLAGS = -DXINERAMA
+ALLOWFLAGS=-Wno-unused-function
 
 # freetype
 FREETYPELIBS = -lfontconfig -lXft
@@ -25,7 +26,7 @@ LIBS = -L$(X11LIB) -lX11 $(XINERAMALIBS) $(FREETYPELIBS) -lvargs -ldmenu
 
 # flags
 CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=700 -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\" $(XINERAMAFLAGS)
-CFLAGS   = -std=c99 -pedantic -Wall -Os $(INCS) $(CPPFLAGS) -ggdb
+CFLAGS   = -std=c99 -pedantic -Wall -Os $(INCS) $(CPPFLAGS) -ggdb ${ALLOWFLAGS}
 LDFLAGS  = $(LIBS)
 
 # compiler and linker

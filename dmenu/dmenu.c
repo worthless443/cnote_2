@@ -564,8 +564,7 @@ paste(void)
 }
 
 int __getline(char **ptr, int *size, FILE *f) {
-	int nl = 0, idx = 1;
-	int test_idx = 0;
+	int idx = 1;
 	char *tmp = malloc(sizeof(char) * 4096), *t = tmp;
 	while(fread(t,1,1,f)) {
 		//printf("%d\n", idx);
@@ -805,7 +804,6 @@ char *input_format(const char *str)  {
 
 int bring_menu_string(const char *format, int options) {
 	XWindowAttributes wa;
-	int i, fast = 0;
 	dpy = XOpenDisplay(NULL);
 	screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);
@@ -827,7 +825,7 @@ int
 _main(int argc, char *argv[])
 {
 	XWindowAttributes wa;
-	int i, fast = 0;
+	int fast = 0;
 
 //	for (i = 1; i < argc; i++)
 //		/* these options take no arguments */
