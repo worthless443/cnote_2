@@ -1,15 +1,15 @@
 #include<dirent.h>
+#include<errno.h>
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
 #include<unistd.h>
 
 #include "config.h"
-#include "def.h"
+#include "dmenu/def.h"
 #include "vargs.h"
 
 #define METAFILE "index.txt"
-#define __DIR "/home/aissy/tmp/cache"
 
 extern int PR_COMMAND,PR_ADD;
 extern int arr[10];
@@ -47,7 +47,7 @@ int format_filename(const char *str, char *buffer) {
 		else buffer[i] = str[i];
 		for(int j=0;j<strlen(_BLOCKED_CHARS);++j)
 			if(str[i] == _BLOCKED_CHARS[j])
-				return 0 - i;
+				return -i;
 	}
 	strcat(buffer,".md");
 	return 1;
@@ -61,9 +61,15 @@ void handle_error_invalid_char(const char *str, int idx) {
 	printf("^\n");
 }
 
+extern int die(char *,...);
+
 struct MetaFile *load_files(const char *dirname) {
 	int i = 1;
-	DIR *d = opendir(dirname);
+	DIR *d = NULL;
+	if(!(d=opendir(dirname)) && errno == ENOENT)
+		die("%s: doesn't exist", dirname);
+	//if(errno == ENOENT)
+		//mkdir(dirname,0700);
 	struct dirent *dir;
 	struct MetaFile *files  = malloc(sizeof(struct MetaFile) * 4096);
 	// TODO take a look at why corruption realloc
@@ -96,6 +102,7 @@ int open_files_dmenu(int flag) {
 }
 extern int opt_invalid;
 extern char *opt_invalid_opt;
+
 int main(int argc, char **argv) {
 	memset(arr,'\0',10 * sizeof(int));
 	int op = 0;
@@ -108,8 +115,15 @@ int main(int argc, char **argv) {
 		free(opt_invalid_opt);
 		return 1;
 	}
-	if(ops[OP_COMMAND])
-		printf("c = %s\n", op_strings[OP_COMMAND]);
+	// TESTING 
+	// if(ops[OP_COMMAND])
+	// 	printf("c = %s\n", op_strings[OP_COMMAND]);
+	// if(ops[OP_CL])
+	// 	printf("x = %s\n", op_strings[OP_CL]);
+	// if(ops[OP_R]) 
+	// 	printf("r = %s\n", op_strings[OP_R]);
+	// return 1;
+
 	if(ops[OP_CL]) {
 		system("rm -rf /home/aissy/tmp/cache/*");
 	}

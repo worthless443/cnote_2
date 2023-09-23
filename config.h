@@ -2,6 +2,7 @@
 #define _SUP_STRING "bdev"
 #define _SUP_STRING_BODY "~acrx"
 #define _ARG_MAP(arg) (arg == 'e') ? OP_EDIT : (arg == '')
+#define __DIR "tmp/cache"
 // change this enum according to required parameters for the program
 enum OP {
 	OP_B,

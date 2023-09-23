@@ -25,7 +25,9 @@ int not_in_opt(char arg, char *string) {
 	return 1;
 }
 
-int global_i;
+extern int die(const char *format, ...);
+
+int global_i = 2;
 int eval_arguments(char *raw_arg, int *output) {
 
 	arg_opt_invalid = 0;
@@ -39,12 +41,13 @@ int eval_arguments(char *raw_arg, int *output) {
 	strcat(catopt, _SUP_STRING_BODY + 1); 
 
 	if(*raw_arg != '-') return 2;
-	global_i = 1;
-	if((is_whole = strlen(raw_arg + 1) > 1)) {
+	if((is_whole = strlen(arg) > 1)) {
+		global_i = 1;
 		for(int i=0;i<strlen(arg);++i) {
 			++global_i;
-			if( not_in_opt(arg[i], catopt)) {
+			if(not_in_opt(arg[i], catopt)) {
 				opt_invalid = 1;
+				opt_invalid_opt = malloc(sizeof(char));
 				*opt_invalid_opt = arg[i];
 			}
 			
@@ -66,7 +69,6 @@ int eval_arguments(char *raw_arg, int *output) {
 		if(not_in_opt(*arg, catopt)) {
 			opt_invalid = 1;	
 			opt_invalid_opt = malloc(sizeof(char));
-			char *tmp = opt_invalid_opt;
 			opt_invalid_opt = (char*)(((long int)opt_invalid_opt + 3) & -4);
 			*opt_invalid_opt = *arg;
 		}
@@ -90,11 +92,14 @@ int ii = 0;
 int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	int j = -1;
 	char *_arg = arg[*i] + global_i;
+	//printf("%d\n", global_i);
 	// NOT NULL terminated arg array
 	int op_opt;
-	if(strlen(_arg) == 0) 
+	if(strlen(_arg) == 0) {
 		if(!(_arg = arg[++*i]))
 			return 0;
+	}
+	//printf("%s\n", _arg);
 
 	int _options[10] = {0};
 #ifndef MAX_ARGN 
@@ -114,24 +119,27 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 		}
 		else op_opt = 0;
 	}
-	memcpy(og, _options, 15);
-	for(int _i=0;_i<j;++_i) {
-		if(options[op_opt] ) {
-			if(strlen(_arg) > 1)  {
-				for(int j=0;j<strlen(_arg);++j) {
-					output[op_opt][j] = _arg[j];
-				}
-			}
-			else  {
-				output[op_opt] = arg[++*i];
-			}
-			arr[op_opt]+=1;
-		 }
-	}	
+	memcpy(output[op_opt],_arg,strlen(_arg));
+	printf("(dd) %d\n", op_opt);
+	//memcpy(og, _options, 15);
+
+	// for(int _i=0;_i<j;++_i) {
+	// 	if(options[op_opt] ) {
+	// 		if(strlen(_arg) > 1)  {
+	// 			for(int j=0;j<strlen(_arg);++j) {
+	// 				output[op_opt][j] = _arg[j];
+	// 			}
+	// 		}
+	// 		else  {
+	// 			output[op_opt] = arg[++*i];
+	// 		}
+	// 		arr[op_opt]+=1;
+	// 	 }
+	// }	
+
+	//printf("end of nigger\n");
 	return 1;
 }
-
-
 
 char **get_op_strings(int size) {
 	char **op_strings = malloc(sizeof(char*) * size);
