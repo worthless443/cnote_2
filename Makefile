@@ -18,7 +18,8 @@ $(MAIN): % : %.c
 	$(CC) $^ $(LIB) ${FLAGS} ${INCS} ${LIBS} -o $@
 install:
 	cp ${MAIN} ${PREFIX}/${MAIN}
-	
-clean:
+
+clean: 
 	rm -rf ${OBJ} ${LIB} ${MAIN}
+clean_all: clean
 	make -C dmenu clean
