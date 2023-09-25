@@ -6,6 +6,11 @@
 
 #include "config.h"
 
+struct Arg {
+	char *forward_arg;
+	int size;
+};
+
 extern void mergesort(int*,int);
 
 int PR_COMMAND = 0, PR_ADD = 0;
@@ -88,19 +93,68 @@ int eval_arguments(char *raw_arg, int *output) {
 }
 
 int ii = 0;
+static int check_arg_span_concat(char **argv, char **out) {
+	int size = 0, tmp_len = 0;
+	char *tmp_arg = NULL;
+	char *arg = malloc(sizeof(char));
+	*out = arg;
+	for(int i=2;(tmp_arg = argv[i])!=NULL;++i) {
+		if(*tmp_arg == '-' && strlen(arg) == 0) 
+			return -1;
 
+		if(*tmp_arg == '-') {
+			*out = arg;
+			return size;
+		}
+	 	tmp_len += strlen(tmp_arg);
+		// hopefully no overflow
+		arg = realloc(arg,(tmp_len + 1)*sizeof(char)); 
+		strcat(arg,tmp_arg);
+		arg[tmp_len] = ' ';
+		tmp_len+=1;
+		size+=1;
+	}
+	
+	//printf("%s\n", arg);
+	return size;
+}
+
+// TODO: upsize heap char buffer and fit everything in it
+// TODO: create a heap object unique to each set BUG: overwriting prev-
+// argument 
+// reapeating three times
 int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	int j = -1;
-	char *_arg = arg[*i] + global_i;
+	char *_arg = malloc(sizeof(char));
+	char *tmp_arg = NULL;
+	int arg_len = strlen(arg[*i] + global_i);
+	int forward_len = check_arg_span_concat(arg,&tmp_arg);
+	int op_opt;
+	
+	if((_arg = realloc (_arg, (arg_len + 1024) 
+					* sizeof(char))) == NULL)
+			die("realloc() failed or no args given");
+	
+	strcat(_arg, arg[*i] + global_i);
+	printf("arglen -> %d\n", arg_len);
+	if (arg_len > 0) 
+		_arg[arg_len] = ' ';
+	memcpy(_arg + arg_len + 1,tmp_arg,strlen(tmp_arg) - 1);
+	*i += forward_len;
+	//printf("%s\n", tmp_arg);
 	//printf("%d\n", global_i);
 	// NOT NULL terminated arg array
-	int op_opt;
-	if(strlen(_arg) == 0) {
-		if(!(_arg = arg[++*i]))
-			return 0;
-	}
+	// if(arg_len == 0) {
+	// 	if(!(_arg = arg[++*i]))
+	// 		return 0;
+	// } 
+	// else {
+	// 	
+			
+	//}
 	//printf("%s\n", _arg);
 
+	// TODO: fix _sorting_ of `options`
 	int _options[10] = {0};
 #ifndef MAX_ARGN 
 	for(int _i = 0; _i < 15; ++_i)   {
@@ -120,7 +174,10 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 		else op_opt = 0;
 	}
 	memcpy(output[op_opt],_arg,strlen(_arg));
-	printf("(dd) %d\n", op_opt);
+	free(_arg);
+	free(tmp_arg);
+	// FIXME fix sorting
+	//printf("(dd) %d\n", op_opt);
 	//memcpy(og, _options, 15);
 
 	// for(int _i=0;_i<j;++_i) {
@@ -156,6 +213,7 @@ void setup(int *ops, char **op_strings, int argc,char **argv) {
 				die("expecting argument to %s", argv[i - 1]);
 }
 
+// DEPRECATED
 void eval_arg_body(int *options,char **output, char **arg, int *i) {
 	char *_arg = arg[*i] + global_i;
 	if(options[OP_COMMAND] && !PR_COMMAND) {
