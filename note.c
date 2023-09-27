@@ -33,9 +33,10 @@ int write_file(const char *fn, char *content) {
 	strcat(ffn,"/");
 	strcat(ffn, fn);
 	printf("%s\n",ffn);
-	FILE *f = fopen(ffn,"w");
+	FILE *f = fopen(ffn,"w+");
 	if(*(format + 3) >= 0x61) *(format + 3) -= 32;
-	fprintf(f,format);
+	int bytes_w = fwrite(format,strlen(format),1, f);
+	printf("%d bytes written\n", bytes_w);
 	fclose(f);
 	return 1;
 }
@@ -100,6 +101,7 @@ int open_files_dmenu(int flag) {
 	bring_menu_string(format, _NORM_MASK & flag);
 	return 1;
 }
+
 extern int opt_invalid;
 extern char *opt_invalid_opt;
 
@@ -116,8 +118,10 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	// TESTING 
-	// if(ops[OP_COMMAND])
-	// 	printf("c = %s\n", op_strings[OP_COMMAND]);
+	// if(ops[OP_COMMAND]) {
+	// 	printf("%s", op_strings[OP_COMMAND]);
+	//    printf("e\n");
+	// }
 	// if(ops[OP_CL])
 	// 	printf("x = %s\n", op_strings[OP_CL]);
 	// if(ops[OP_R]) 

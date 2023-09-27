@@ -21,3 +21,4 @@ test2.c
 vargs.o
 a.out
 
+tmp*

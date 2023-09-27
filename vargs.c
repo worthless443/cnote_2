@@ -21,6 +21,7 @@ int og[20] = {3};
 int gidx = 0;
 int opt_invalid;
 int arg_opt_invalid;
+int arg_whole_len;
 char *opt_invalid_opt = NULL;
 
 int not_in_opt(char arg, char *string) {
@@ -93,15 +94,18 @@ int eval_arguments(char *raw_arg, int *output) {
 }
 
 int ii = 0;
+int start_idx_argv = 1;
 static int check_arg_span_concat(char **argv, char **out) {
 	int size = 0, tmp_len = 0;
 	char *tmp_arg = NULL;
 	char *arg = malloc(sizeof(char));
 	*out = arg;
-	for(int i=2;(tmp_arg = argv[i])!=NULL;++i) {
-		if(*tmp_arg == '-' && strlen(arg) == 0) 
+	printf("%d\n", start_idx_argv);
+	for(int i=start_idx_argv + 1;(tmp_arg = argv[i])!=NULL;++i) {
+		if(*tmp_arg == '-' && strlen(arg) == 0)  {
+			*out = NULL;
 			return -1;
-
+		}
 		if(*tmp_arg == '-') {
 			*out = arg;
 			return size;
@@ -113,8 +117,8 @@ static int check_arg_span_concat(char **argv, char **out) {
 		arg[tmp_len] = ' ';
 		tmp_len+=1;
 		size+=1;
+		arg_whole_len  = tmp_len;
 	}
-	
 	//printf("%s\n", arg);
 	return size;
 }
@@ -131,16 +135,22 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	int forward_len = check_arg_span_concat(arg,&tmp_arg);
 	int op_opt;
 	
-	if((_arg = realloc (_arg, (arg_len + 1024) 
+	if((_arg = realloc (_arg, (arg_len + arg_whole_len) 
 					* sizeof(char))) == NULL)
 			die("realloc() failed or no args given");
-	
+
 	strcat(_arg, arg[*i] + global_i);
-	printf("arglen -> %d\n", arg_len);
-	if (arg_len > 0) 
+	if (forward_len > 0) {
+
 		_arg[arg_len] = ' ';
-	memcpy(_arg + arg_len + 1,tmp_arg,strlen(tmp_arg) - 1);
+		memcpy(_arg + arg_len + 
+				(!arg_len ? 0 : 1),
+			tmp_arg,strlen(tmp_arg) - 1);
+
+	}
 	*i += forward_len;
+	start_idx_argv = *i;		
+	//printf("%d\n", *i);
 	//printf("%s\n", tmp_arg);
 	//printf("%d\n", global_i);
 	// NOT NULL terminated arg array
@@ -150,7 +160,7 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	// } 
 	// else {
 	// 	
-			
+		
 	//}
 	//printf("%s\n", _arg);
 
@@ -173,9 +183,13 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 		}
 		else op_opt = 0;
 	}
+	//printf("%d\n", *tmp_arg);
 	memcpy(output[op_opt],_arg,strlen(_arg));
-	free(_arg);
-	free(tmp_arg);
+	if(_arg) {
+		free(_arg);
+	}
+	if(tmp_arg)
+		free(tmp_arg);
 	// FIXME fix sorting
 	//printf("(dd) %d\n", op_opt);
 	//memcpy(og, _options, 15);

@@ -19,6 +19,7 @@
 #include "drw.h"
 #include "util.h"
 #include "def.h"
+#include "../config.h"
 
 /* macros */
 #define INTERSECT(x,y,w,h,r)  (MAX(0, MIN((x)+(w),(r).x_org+(r).width)  - MAX((x),(r).x_org)) \
@@ -496,16 +497,16 @@ insert:
 		char name[1000]	= {0};
 		switch(options) {
 			case WRITE:
-				sprintf(name,"kitty vi /home/aissy/tmp/cache/%s 2>/dev/null &", outstring);
+				sprintf(name,"kitty vi %s/%s 2>/dev/null &", __DIR, outstring);
 				system(name);
 				break;
 			case DELETE:
 				char name[1000]	= {0};
-				sprintf(name,"rm -rf /home/aissy/tmp/cache/%s", outstring);
+				sprintf(name,"rm -rf %s/%s", __DIR, outstring);
 				system(name);
 				break;
 			case ALL:
-				system("rm -rf /home/aissy/tmp/cache/*");
+				system("rm -rf " __DIR "/*");
 				break;
 		};
 		if (!(ev->state & ControlMask)) {
