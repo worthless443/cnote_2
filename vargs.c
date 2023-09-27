@@ -96,12 +96,14 @@ int eval_arguments(char *raw_arg, int *output) {
 int ii = 0;
 int start_idx_argv = 1;
 static int check_arg_span_concat(char **argv, char **out) {
-	int size = 0, tmp_len = 0;
+	int size = 0,i;
+	int tmp_len = 0; //strlen(argv[start_idx_argv + 1]);
 	char *tmp_arg = NULL;
-	char *arg = malloc(sizeof(char));
-	*out = arg;
-	printf("%d\n", start_idx_argv);
-	for(int i=start_idx_argv + 1;(tmp_arg = argv[i])!=NULL;++i) {
+	char *arg = NULL;;
+	for(i=start_idx_argv + 1, 
+			arg = malloc(sizeof(char) * strlen(argv[i]));
+			(tmp_arg = argv[i])!=NULL
+			;++i) {
 		if(*tmp_arg == '-' && strlen(arg) == 0)  {
 			*out = NULL;
 			return -1;
@@ -110,16 +112,18 @@ static int check_arg_span_concat(char **argv, char **out) {
 			*out = arg;
 			return size;
 		}
-	 	tmp_len += strlen(tmp_arg);
-		// hopefully no overflow
-		arg = realloc(arg,(tmp_len + 1)*sizeof(char)); 
-		strcat(arg,tmp_arg);
-		arg[tmp_len] = ' ';
-		tmp_len+=1;
+
+		if(tmp_len)
+			arg = realloc(arg, (tmp_len*(sizeof(char) + 1))); // insufficient storage (somehow :( )
+		memcpy(arg + tmp_len, tmp_arg, strlen(tmp_arg));
+	 	tmp_len += strlen(tmp_arg) + 1;
+		if(argv[i + 1])
+			memcpy(arg + tmp_len -1 ," ", 1);
 		size+=1;
 		arg_whole_len  = tmp_len;
+			
 	}
-	//printf("%s\n", arg);
+	*out = arg;
 	return size;
 }
 
@@ -134,34 +138,21 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	int arg_len = strlen(arg[*i] + global_i);
 	int forward_len = check_arg_span_concat(arg,&tmp_arg);
 	int op_opt;
-	
 	if((_arg = realloc (_arg, (arg_len + arg_whole_len) 
 					* sizeof(char))) == NULL)
 			die("realloc() failed or no args given");
 
 	strcat(_arg, arg[*i] + global_i);
 	if (forward_len > 0) {
-
 		_arg[arg_len] = ' ';
 		memcpy(_arg + arg_len + 
 				(!arg_len ? 0 : 1),
-			tmp_arg,strlen(tmp_arg) - 1);
+			tmp_arg,strlen(tmp_arg));
 
 	}
 	*i += forward_len;
 	start_idx_argv = *i;		
-	//printf("%d\n", *i);
-	//printf("%s\n", tmp_arg);
-	//printf("%d\n", global_i);
-	// NOT NULL terminated arg array
-	// if(arg_len == 0) {
-	// 	if(!(_arg = arg[++*i]))
-	// 		return 0;
-	// } 
-	// else {
-	// 	
-		
-	//}
+	//
 	//printf("%s\n", _arg);
 
 	// TODO: fix _sorting_ of `options`
