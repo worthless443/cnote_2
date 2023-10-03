@@ -100,13 +100,18 @@ static int check_arg_span_concat(char **argv, char **out) {
 	int tmp_len = 0; //strlen(argv[start_idx_argv + 1]);
 	char *tmp_arg = NULL;
 	char *arg = NULL;;
+	// checking if there is a next arg
+	if(argv[start_idx_argv + 1] == NULL) {
+		return 0;
+	}
+	//printf("%s\n", argv[start_idx_argv + 1]);
 	for(i=start_idx_argv + 1, 
 			arg = malloc(sizeof(char) * strlen(argv[i]));
 			(tmp_arg = argv[i])!=NULL
 			;++i) {
 		if(*tmp_arg == '-' && strlen(arg) == 0)  {
 			*out = NULL;
-			return -1;
+			return 0;
 		}
 		if(*tmp_arg == '-') {
 			*out = arg;
@@ -135,8 +140,12 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	int j = -1;
 	char *_arg = malloc(sizeof(char));
 	char *tmp_arg = NULL;
+	//printf("argv[i] = %s\n", arg[*i]);
 	int arg_len = strlen(arg[*i] + global_i);
 	int forward_len = check_arg_span_concat(arg,&tmp_arg);
+	if(forward_len == 0 && arg_len == 0) 
+		return 0;
+
 	int op_opt;
 	if((_arg = realloc (_arg, (arg_len + arg_whole_len) 
 					* sizeof(char))) == NULL)
@@ -151,7 +160,7 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 
 	}
 	*i += forward_len;
-	start_idx_argv = *i;		
+	start_idx_argv = *i + 1;		
 	//
 	//printf("%s\n", _arg);
 
@@ -215,7 +224,7 @@ void setup(int *ops, char **op_strings, int argc,char **argv) {
 	for(int i=1,j = OP_BAR + 1;i<argc;++i,++j)  
 		if(eval_arguments(argv[i], ops)) 
 			if(!eval_arg_body_2(ops,op_strings,argv,&i))
-				die("expecting argument to %s", argv[i - 1]);
+				die("expecting argument to %s", argv[i]);
 }
 
 // DEPRECATED
