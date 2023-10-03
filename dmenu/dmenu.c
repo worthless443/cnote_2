@@ -497,6 +497,7 @@ insert:
 		char name[1000]	= {0};
 		switch(options) {
 			case WRITE:
+				printf("__DIR %s\n", __DIR);
 				sprintf(name,"kitty vi %s/%s 2>/dev/null &", __DIR, outstring);
 				system(name);
 				break;
