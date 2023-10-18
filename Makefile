@@ -3,7 +3,10 @@ CC=gcc
 OBJ=vargs.o sort.o
 LIB=libvargs.a
 MAIN=note
-FLAGS=-I./ -O3  -ggdb -Wall  -Wno-unused-variable
+ifdef TESTING
+DEF_MACROS=-DARGPARSE_TESTING
+endif
+FLAGS=-I./ -O3  -ggdb -Wall  -Wno-unused-variable ${DEF_MACROS}
 PREFIX=/usr/bin
 #SRC_DIR=examples
 

@@ -143,15 +143,19 @@ int eval_arg_body_2(int *options,char **output, char **arg, int *i) {
 	//printf("argv[i] = %s\n", arg[*i]);
 	int arg_len = strlen(arg[*i] + global_i);
 	int forward_len = check_arg_span_concat(arg,&tmp_arg);
-	if(forward_len == 0 && arg_len == 0) 
+	if(forward_len == 0 && arg_len == 0)  {
+		free(_arg);
+		free(tmp_arg);
 		return 0;
+	}
 
 	int op_opt;
 	if((_arg = realloc (_arg, (arg_len + arg_whole_len) 
 					* sizeof(char))) == NULL)
 			die("realloc() failed or no args given");
 
-	strcat(_arg, arg[*i] + global_i);
+
+	memcpy(_arg, arg[*i] + global_i, arg_len);
 	if (forward_len > 0) {
 		_arg[arg_len] = ' ';
 		memcpy(_arg + arg_len + 

@@ -118,15 +118,19 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	// TESTING 
-	// if(ops[OP_COMMAND]) {
-	// 	printf("%s", op_strings[OP_COMMAND]);
-	//    printf("e\n");
-	// }
-	// if(ops[OP_CL])
-	// 	printf("x = %s\n", op_strings[OP_CL]);
-	// if(ops[OP_R]) 
-	// 	printf("r = %s\n", op_strings[OP_R]);
-	// return 1;
+#ifdef ARGPARSE_TESTING
+	 if(ops[OP_COMMAND]) {
+		printf("%s", op_strings[OP_COMMAND]);
+		printf("e\n");
+	 }
+	 if(ops[OP_CL])
+		printf("x = %s\n", op_strings[OP_CL]);
+	 if(ops[OP_R]) 
+		printf("r = %s\n", op_strings[OP_R]);
+	 if(ops[OP_KATZ]) 
+		printf("k = %s\n", op_strings[OP_KATZ]);
+	 return 1;
+#endif
 
 	if(ops[OP_CL]) {
 		system("rm -rf /home/aissy/tmp/cache/*");
